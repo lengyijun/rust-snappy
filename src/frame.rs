@@ -1,3 +1,4 @@
+use std::prelude::v1::*;
 use crate::bytes;
 use crate::compress::{max_compress_len, Encoder};
 use crate::crc32::CheckSummer;

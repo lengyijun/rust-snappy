@@ -1,3 +1,4 @@
+use std::prelude::v1::*;
 /// https://developers.google.com/protocol-buffers/docs/encoding#varints
 pub fn write_varu64(data: &mut [u8], mut n: u64) -> usize {
     let mut i = 0;

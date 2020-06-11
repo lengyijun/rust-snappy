@@ -84,6 +84,10 @@ fn main() {
 
 #![deny(missing_docs)]
 
+#![no_std]
+#[macro_use]
+extern crate sgx_tstd as std;
+
 #[cfg(test)]
 doc_comment::doctest!("../README.md");
 

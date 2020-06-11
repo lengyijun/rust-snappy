@@ -1,3 +1,4 @@
+use std::prelude::v1::*;
 use crate::bytes;
 use crate::crc32_table::{TABLE, TABLE16};
 
@@ -16,16 +17,8 @@ pub struct CheckSummer {
 impl CheckSummer {
     /// Create a new checksummer that can compute CRC32C checksums on arbitrary
     /// bytes.
-    #[cfg(not(target_arch = "x86_64"))]
     pub fn new() -> CheckSummer {
         CheckSummer { sse42: false }
-    }
-
-    /// Create a new checksummer that can compute CRC32C checksums on arbitrary
-    /// bytes.
-    #[cfg(target_arch = "x86_64")]
-    pub fn new() -> CheckSummer {
-        CheckSummer { sse42: is_x86_feature_detected!("sse4.2") }
     }
 
     /// Returns the "masked" CRC32 checksum of `buf` using the Castagnoli
@@ -38,47 +31,10 @@ impl CheckSummer {
     }
 
     /// Returns the CRC32 checksum of `buf` using the Castagnoli polynomial.
-    #[cfg(not(target_arch = "x86_64"))]
     fn crc32c(&self, buf: &[u8]) -> u32 {
         crc32c_slice16(buf)
     }
 
-    /// Returns the CRC32 checksum of `buf` using the Castagnoli polynomial.
-    #[cfg(target_arch = "x86_64")]
-    fn crc32c(&self, buf: &[u8]) -> u32 {
-        if self.sse42 {
-            // SAFETY: When sse42 is true, we are guaranteed to be running on
-            // a CPU that supports SSE 4.2.
-            unsafe { crc32c_sse(buf) }
-        } else {
-            crc32c_slice16(buf)
-        }
-    }
-}
-
-#[cfg(target_arch = "x86_64")]
-#[target_feature(enable = "sse4.2")]
-unsafe fn crc32c_sse(buf: &[u8]) -> u32 {
-    use std::arch::x86_64::*;
-
-    let mut crc = !0u32;
-    // SAFETY: This is safe since alignment is handled by align_to (oh how I
-    // love you) and since 8 adjacent u8's are guaranteed to have the same
-    // in-memory representation as u64 for all possible values.
-    let (prefix, u64s, suffix) = buf.align_to::<u64>();
-    for &b in prefix {
-        // SAFETY: Safe since we have sse4.2 enabled.
-        crc = _mm_crc32_u8(crc, b);
-    }
-    for &n in u64s {
-        // SAFETY: Safe since we have sse4.2 enabled.
-        crc = _mm_crc32_u64(crc as u64, n) as u32;
-    }
-    for &b in suffix {
-        // SAFETY: Safe since we have sse4.2 enabled.
-        crc = _mm_crc32_u8(crc, b);
-    }
-    !crc
 }
 
 /// Returns the CRC32 checksum of `buf` using the Castagnoli polynomial.

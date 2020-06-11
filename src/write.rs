@@ -9,6 +9,7 @@ It would also be possible to provide a `write::FrameEncoder`, which decompresses
 data as it writes it, but it hasn't been implemented yet.
 */
 
+use std::prelude::v1::*;
 use std::fmt;
 use std::io::{self, Write};
 

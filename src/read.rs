@@ -13,6 +13,7 @@ This module provides two `std::io::Read` implementations:
 Typically, `read::FrameDecoder` is the version that you'll want.
 */
 
+use std::prelude::v1::*;
 use std::cmp;
 use std::fmt;
 use std::io;
